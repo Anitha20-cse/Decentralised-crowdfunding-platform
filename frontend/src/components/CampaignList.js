@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import abiJson from "../abi/Crowdfunding.json";
 
-const CONTRACT_ADDRESS = "YOUR_DEPLOYED_CONTRACT_ADDRESS";
+const CONTRACT_ADDRESS = "0x259fB55444Ee31891758D4be8593e4A621D4D575";
 
 function CampaignList() {
   const [campaigns, setCampaigns] = useState([]);

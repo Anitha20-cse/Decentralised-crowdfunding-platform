@@ -146,12 +146,22 @@
         },
         {
           "internalType": "string",
+          "name": "_title",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
           "name": "_description",
           "type": "string"
         },
         {
           "internalType": "uint256",
           "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_expectedCompletionDate",
           "type": "uint256"
         }
       ],
@@ -199,6 +209,21 @@
           "type": "string"
         },
         {
+          "internalType": "string",
+          "name": "creatorName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "creatorRole",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "causeCategory",
+          "type": "string"
+        },
+        {
           "internalType": "uint256",
           "name": "goalAmount",
           "type": "uint256"
@@ -237,6 +262,21 @@
         {
           "internalType": "string",
           "name": "_description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_creatorName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_creatorRole",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_causeCategory",
           "type": "string"
         },
         {

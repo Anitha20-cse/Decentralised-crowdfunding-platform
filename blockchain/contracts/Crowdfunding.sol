@@ -6,8 +6,10 @@ contract Crowdfunding {
     // ---------- DATA STRUCTURES ----------
 
     struct Milestone {
+        string title;
         string description;
         uint256 amount;
+        uint256 expectedCompletionDate;
         uint256 yesVotes;
         uint256 noVotes;
         bool completed;
@@ -17,7 +19,10 @@ contract Crowdfunding {
     struct Campaign {
         address payable creator;
         string title;
-        string description;
+        string description; // short description
+        string creatorName;
+        string creatorRole;
+        string causeCategory;
         uint256 goalAmount;
         uint256 totalCollected;
         uint256 deadline;
@@ -56,6 +61,9 @@ contract Crowdfunding {
     function createCampaign(
         string memory _title,
         string memory _description,
+        string memory _creatorName,
+        string memory _creatorRole,
+        string memory _causeCategory,
         uint256 _goalAmount,
         uint256 _durationInDays
     ) external {
@@ -63,6 +71,9 @@ contract Crowdfunding {
         c.creator = payable(msg.sender);
         c.title = _title;
         c.description = _description;
+        c.creatorName = _creatorName;
+        c.creatorRole = _creatorRole;
+        c.causeCategory = _causeCategory;
         c.goalAmount = _goalAmount;
         c.deadline = block.timestamp + (_durationInDays * 1 days);
         c.active = true;
@@ -73,14 +84,18 @@ contract Crowdfunding {
 
     function addMilestone(
         uint256 _campaignId,
+        string memory _title,
         string memory _description,
-        uint256 _amount
+        uint256 _amount,
+        uint256 _expectedCompletionDate
     ) external campaignExists(_campaignId) onlyCreator(_campaignId) {
         Campaign storage c = campaigns[_campaignId];
 
         Milestone storage m = c.milestones[c.milestoneCount];
+        m.title = _title;
         m.description = _description;
         m.amount = _amount;
+        m.expectedCompletionDate = _expectedCompletionDate;
 
         emit MilestoneCreated(_campaignId, c.milestoneCount);
         c.milestoneCount++;

@@ -5,8 +5,9 @@ module.exports = {
   solidity: "0.8.24",
   networks: {
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL,
-      accounts: [process.env.PRIVATE_KEY]
+      url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
+      accounts: [process.env.PRIVATE_KEY],
+      timeout: 60000
     }
   }
 };

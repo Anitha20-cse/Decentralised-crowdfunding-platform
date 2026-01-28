@@ -1,13 +1,26 @@
 import React from "react";
+import { useWallet } from "../context/WalletContext";
 
-function Navbar({ connectWallet, account }) {
+function Navbar() {
+  const wallet = useWallet();
+
+  // 🛡️ Safety check (prevents crash)
+  if (!wallet) return null;
+
+  const { address, connectWallet } = wallet;
+
   return (
-    <div className="navbar">
-      <h1>🚀 CrowdFunding DApp</h1>
-      <button onClick={connectWallet}>
-        {account ? account.slice(0,6)+"..." : "Connect Wallet"}
-      </button>
-    </div>
+    <nav className="navbar">
+      <h2>SocialFund</h2>
+
+      {address ? (
+        <span>
+          {address.slice(0, 6)}...{address.slice(-4)}
+        </span>
+      ) : (
+        <button onClick={connectWallet}>Connect Wallet</button>
+      )}
+    </nav>
   );
 }
 

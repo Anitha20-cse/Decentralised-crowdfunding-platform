@@ -1,96 +1,94 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import CreateCampaign from "../components/CreateCampaign";
 
-function Home({ campaigns = [], createCampaign, fundCampaign }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [goal, setGoal] = useState("");
-  const [days, setDays] = useState("");
+function Home({ createCampaign, account, campaigns }) {
+  const navigate = useNavigate();
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
-  function handleCreate() {
-    if (!title || !description || !goal || !days) {
-      alert("All fields are required");
-      return;
-    }
+  function goToCampaigns() {
+    navigate("/campaigns");
+  }
 
-    createCampaign(title, description, goal, days);
+  if (!account) {
+    return (
+      <div
+        style={{
+          padding: "40px",
+          textAlign: "center",
+          maxWidth: "700px",
+          margin: "auto",
+        }}
+      >
+        <h1>GreenFund</h1>
 
-    // clear form
-    setTitle("");
-    setDescription("");
-    setGoal("");
-    setDays("");
+        <p style={{ marginTop: "20px", fontSize: "16px" }}>
+          A decentralized crowdfunding platform empowering social welfare,
+          education, environment, and community-driven projects using blockchain
+          technology.
+        </p>
+
+        <p style={{ marginTop: "20px", fontSize: "14px" }}>
+          Please connect your wallet to get started.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: "20px", maxWidth: "500px" }}>
-      <h2>Create Campaign</h2>
+    <div
+      style={{
+        padding: "40px",
+        maxWidth: "1200px",
+        margin: "auto",
+      }}
+    >
+      <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <h1>GreenFund</h1>
 
-      <input
-        type="text"
-        placeholder="Campaign Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+        <p style={{ marginTop: "20px", fontSize: "16px" }}>
+          A decentralized crowdfunding platform empowering social welfare,
+          education, environment, and community-driven projects using blockchain
+          technology.
+        </p>
 
-      <br /><br />
+        <button
+          style={{
+            margin: "10px",
+            padding: "10px 20px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+          onClick={() => setShowCreateForm(!showCreateForm)}
+        >
+          {showCreateForm ? "Cancel" : "Create Campaign"}
+        </button>
+      </div>
 
-      <input
-        type="text"
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-
-      <br /><br />
-
-      <input
-        type="text"
-        placeholder="Goal (ETH)"
-        value={goal}
-        onChange={(e) => setGoal(e.target.value)}
-      />
-
-      <br /><br />
-
-      <input
-        type="number"
-        placeholder="Duration (Days)"
-        value={days}
-        onChange={(e) => setDays(e.target.value)}
-      />
-
-      <br /><br />
-
-      <button onClick={handleCreate}>
-        Create Campaign
-      </button>
-
-      <hr />
-
-      <h2>All Campaigns</h2>
-
-      {campaigns.length === 0 ? (
-        <p>No campaigns found</p>
-      ) : (
-        campaigns.map((c) => (
-          <div
-            key={c.id}
-            style={{
-              border: "1px solid #ccc",
-              margin: "10px",
-              padding: "10px",
-            }}
-          >
-            <p><b>Title:</b> {c.title}</p>
-            <p><b>Description:</b> {c.description}</p>
-            <p><b>Goal:</b> {c.goal} ETH</p>
-
-            <button onClick={() => fundCampaign(c.id)}>
-              Fund 0.01 ETH
-            </button>
-          </div>
-        ))
+      {showCreateForm && (
+        <div style={{ marginBottom: "40px", textAlign: "center" }}>
+          <CreateCampaign createCampaign={createCampaign} />
+        </div>
       )}
+
+      <h2 style={{ textAlign: "center" }}>Active Campaigns</h2>
+
+      {campaigns.length === 0 && (
+        <p style={{ textAlign: "center" }}>No campaigns found</p>
+      )}
+
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+        {campaigns.map(c => (
+          <div key={c.id} className="card" style={{ width: "300px", margin: "10px" }}>
+            <h3>{c.title}</h3>
+            <p>{c.description}</p>
+            <p><b>Goal:</b> {c.goal} ETH</p>
+            <p><b>Collected:</b> {c.collected} ETH</p>
+            <p><b>Deadline:</b> {c.deadline}</p>
+            <p><b>Status:</b> {c.active ? "Active" : "Closed"}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

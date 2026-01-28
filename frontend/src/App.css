@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #000000, #22c55e);
   color: white;
 }
 
@@ -17,7 +17,7 @@ body {
 }
 
 button {
-  background: #00f2fe;
+  background: #22c55e;
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -30,8 +30,8 @@ button {
 }
 
 .card {
-  background: white;
-  color: black;
+  background: black;
+  color: white;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -43,5 +43,5 @@ input {
   padding: 10px;
   margin-bottom: 12px;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #22c55e;
 }
