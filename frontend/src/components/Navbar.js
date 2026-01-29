@@ -3,8 +3,7 @@ import { useWallet } from "../context/WalletContext";
 
 function Navbar() {
   const wallet = useWallet();
-
-  // 🛡️ Safety check (prevents crash)
+  
   if (!wallet) return null;
 
   const { address, connectWallet } = wallet;

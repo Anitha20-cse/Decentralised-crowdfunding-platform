@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // POST /campaigns - Create a new campaign
-router.post('/', upload.array('images'), async (req, res) => {
+router.post('/', upload.any(), async (req, res) => {
   try {
     console.log('Received req.body:', req.body);
     console.log('Received req.files:', req.files);
@@ -31,10 +31,47 @@ router.post('/', upload.array('images'), async (req, res) => {
       durationInDays,
       creatorName,
       creatorRole,
-      causeCategory
+      causeCategory,
+      creatorAddress,
+      numMilestones,
+      milestones
     } = req.body;
 
-    const images = req.files ? req.files.map(file => file.filename) : [];
+    const images = req.files ? req.files.filter(file => file.fieldname === 'images').map(file => file.filename) : [];
+
+    // Parse milestones JSON
+    let parsedMilestones = [];
+    console.log('Raw milestones from req.body:', milestones);
+    if (milestones) {
+      try {
+        parsedMilestones = JSON.parse(milestones);
+        console.log('Parsed milestones:', parsedMilestones);
+        // Validate and format milestones
+        parsedMilestones = parsedMilestones.map(m => ({
+          title: m.title,
+          description: m.description,
+          amount: parseFloat(m.amount),
+          expectedCompletionDate: new Date(m.expectedCompletionDate)
+        }));
+        console.log('Formatted milestones:', parsedMilestones);
+        // Additional validation
+        for (let m of parsedMilestones) {
+          if (!m.title || !m.description || !m.amount || !m.expectedCompletionDate) {
+            return res.status(400).json({ error: 'All milestone fields are required' });
+          }
+          if (isNaN(m.amount) || m.amount <= 0) {
+            return res.status(400).json({ error: 'Milestone amount must be a positive number' });
+          }
+          if (isNaN(m.expectedCompletionDate.getTime())) {
+            return res.status(400).json({ error: 'Invalid expected completion date' });
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing milestones:', error);
+        return res.status(400).json({ error: 'Invalid milestones format' });
+      }
+    }
+    console.log('Final parsedMilestones:', parsedMilestones);
 
     console.log('Parsed data:', {
       title,
@@ -62,7 +99,10 @@ router.post('/', upload.array('images'), async (req, res) => {
       creatorName,
       creatorRole,
       causeCategory,
-      images
+      images,
+      creatorAddress,
+      numMilestones: parseInt(numMilestones) || 0,
+      milestones: parsedMilestones
     });
 
     await campaign.save();
@@ -81,6 +121,20 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error fetching campaigns:', error);
     res.status(500).json({ error: 'Failed to fetch campaigns' });
+  }
+});
+
+// GET /campaigns/:id - Get a specific campaign by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const campaign = await Campaign.findOne({ campaignId: parseInt(req.params.id) });
+    if (!campaign) {
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
+    res.json(campaign);
+  } catch (error) {
+    console.error('Error fetching campaign:', error);
+    res.status(500).json({ error: 'Failed to fetch campaign' });
   }
 });
 

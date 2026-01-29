@@ -1,24 +1,21 @@
-# TODO for Crowdfunding Project Enhancements
+# TODO for Crowdfunding App Modifications
 
-## Smart Contract Modifications
-- [ ] Modify blockchain/contracts/Crowdfunding.sol to add new fields to Campaign and Milestone structs
-- [ ] Update createCampaign function to accept additional parameters
-- [ ] Update addMilestone function to accept title and expected completion date
+## Issue 1: Contribute Option Visibility
+- The contribute option should only be visible for accounts other than the campaign creator.
+- Currently, creatorAddress is not being saved in the backend, causing the check to fail and show contribute for everyone.
 
-## Backend Setup
-- [ ] Create backend/server.js with Express server, MongoDB connection, CORS, Multer
-- [ ] Create backend/models/Campaign.js Mongoose schema
-- [ ] Create backend/routes/campaigns.js for campaign creation API
-- [ ] Install @pinata/sdk for IPFS integration
-- [ ] Set up IPFS upload functionality in routes
+### Tasks:
+- [ ] Update `frontend/src/App.js` to include `creatorAddress` in the formData when creating a campaign.
+- [ ] Update `backend/routes/campaigns.js` to destructure and save `creatorAddress` in the Campaign model.
 
-## Frontend Updates
-- [ ] Update frontend/src/components/CreateCampaign.js to include all new fields
-- [ ] Add dynamic milestone fields based on number of milestones
-- [ ] Add image upload functionality
-- [ ] Update frontend/src/App.js to call backend API instead of contract directly
+## Issue 2: Milestone Display
+- Milestones are not displaying properly on the campaign details page, even though they were added during creation.
+- Possible causes: Fetch from blockchain failing, data not parsed correctly, or contract issues.
 
-## Additional Tasks
-- [ ] Update frontend/src/abi/Crowdfunding.json after contract changes
-- [ ] Test the full campaign creation flow
-- [ ] Deploy updated smart contract
+### Tasks:
+- [ ] Investigate and fix milestone fetching in `frontend/src/pages/CampaignDetails.js`.
+- [ ] Ensure milestone data is correctly added to blockchain in `frontend/src/App.js`.
+- [ ] Add error handling and logging for milestone operations.
+
+## General:
+- [ ] Test the changes to ensure contribute option is hidden for creators and milestones display correctly.

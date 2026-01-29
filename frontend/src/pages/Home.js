@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCampaign from "../components/CreateCampaign";
+import CampaignCard from "../components/CampaignCard";
 
 function Home({ createCampaign, account, campaigns }) {
   const navigate = useNavigate();
@@ -67,7 +68,8 @@ function Home({ createCampaign, account, campaigns }) {
 
       {showCreateForm && (
         <div style={{ marginBottom: "40px", textAlign: "center" }}>
-          <CreateCampaign createCampaign={createCampaign} />
+          <CreateCampaign createCampaign={createCampaign} account={account} />
+          {console.log('Home - Passing account to CreateCampaign:', account)}
         </div>
       )}
 
@@ -77,16 +79,13 @@ function Home({ createCampaign, account, campaigns }) {
         <p style={{ textAlign: "center" }}>No campaigns found</p>
       )}
 
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
-        {campaigns.map(c => (
-          <div key={c.id} className="card" style={{ width: "300px", margin: "10px" }}>
-            <h3>{c.title}</h3>
-            <p>{c.description}</p>
-            <p><b>Goal:</b> {c.goal} ETH</p>
-            <p><b>Collected:</b> {c.collected} ETH</p>
-            <p><b>Deadline:</b> {c.deadline}</p>
-            <p><b>Status:</b> {c.active ? "Active" : "Closed"}</p>
-          </div>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "16px" }}>
+        {campaigns.map(campaign => (
+          <CampaignCard
+            key={campaign.id}
+            campaign={campaign}
+            fundCampaign={() => {}} // Placeholder, as funding is handled on details page
+          />
         ))}
       </div>
     </div>

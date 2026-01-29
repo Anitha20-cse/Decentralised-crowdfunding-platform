@@ -167,4 +167,16 @@ contract Crowdfunding {
 
         emit Refunded(_campaignId, msg.sender, amount);
     }
+
+    function getMilestone(uint256 _campaignId, uint256 _milestoneId) external view campaignExists(_campaignId) returns (string memory title, string memory description, uint256 amount, uint256 expectedCompletionDate, uint256 yesVotes, uint256 noVotes, bool completed) {
+        Campaign storage c = campaigns[_campaignId];
+        require(_milestoneId < c.milestoneCount, "Milestone does not exist");
+
+        Milestone storage m = c.milestones[_milestoneId];
+        return (m.title, m.description, m.amount, m.expectedCompletionDate, m.yesVotes, m.noVotes, m.completed);
+    }
+
+    function getMilestoneCount(uint256 _campaignId) external view campaignExists(_campaignId) returns (uint256) {
+        return campaigns[_campaignId].milestoneCount;
+    }
 }

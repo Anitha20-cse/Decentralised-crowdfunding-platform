@@ -6,11 +6,12 @@ import { useWallet } from "./context/WalletContext";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Campaigns from "./pages/Campaigns";
+import CampaignDetails from "./pages/CampaignDetails";
 
 import CrowdfundingABI from "./abi/Crowdfunding.json";
 import "./App.css";
 
-const CONTRACT_ADDRESS = "0x259fB55444Ee31891758D4be8593e4A621D4D575";
+const CONTRACT_ADDRESS = "0x8008a865A6A157142E5D692A51c18e45B93F0c30";
 
 function App() {
   const wallet = useWallet();
@@ -21,31 +22,59 @@ function App() {
 
   // ---------------- LOAD CAMPAIGNS ----------------
   async function loadCampaigns() {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const contract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      CrowdfundingABI,
-      provider
-    );
+    try {
+      // Fetch from backend
+      const backendResponse = await fetch('http://localhost:5000/campaigns');
+      const backendCampaigns = await backendResponse.json();
 
-    const count = await contract.campaignCount();
-    const temp = [];
+      // Fetch from blockchain
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        CrowdfundingABI,
+        provider
+      );
 
-    for (let i = 0; i < count; i++) {
-      const c = await contract.campaigns(i);
+      const temp = [];
 
-      temp.push({
-        id: i,
-        creator: c.creator,
-        title: c.title,
-        description: c.description,
-        goal: ethers.formatEther(c.goalAmount),
-        collected: ethers.formatEther(c.totalCollected),
-        deadline: c.deadline.toString(),
-      });
+      for (const backendData of backendCampaigns) {
+        try {
+          const c = await contract.campaigns(backendData.campaignId);
+
+          const createdAt = new Date(backendData.createdAt);
+          const durationMs = backendData.durationInDays * 24 * 60 * 60 * 1000;
+          const deadlineDate = new Date(createdAt.getTime() + durationMs);
+          const now = new Date();
+          const daysLeft = Math.max(0, Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24)));
+
+          temp.push({
+            id: backendData.campaignId,
+            title: backendData.title,
+            imageUrl: backendData.images && backendData.images.length > 0 ? `http://localhost:5000/uploads/${backendData.images[0]}` : '',
+            creatorName: backendData.creatorName,
+            creatorAddress: backendData.creatorAddress,
+            goal: parseFloat(backendData.goalAmount),
+            collected: parseFloat(ethers.formatEther(c.totalCollected)),
+            deadline: deadlineDate.toISOString(),
+            supportersCount: 0, // Placeholder, as blockchain doesn't track individual funders easily
+            daysLeft,
+            progressPercent: (parseFloat(ethers.formatEther(c.totalCollected)) / parseFloat(backendData.goalAmount)) * 100,
+            shortDescription: backendData.shortDescription,
+            detailedDescription: backendData.detailedDescription,
+            creatorRole: backendData.creatorRole,
+            causeCategory: backendData.causeCategory,
+            createdAt: backendData.createdAt,
+          });
+        } catch (blockchainError) {
+          console.warn(`Blockchain data not found for campaign ID ${backendData.campaignId}, skipping:`, blockchainError);
+          // Skip campaigns that don't exist on blockchain
+        }
+      }
+
+      setCampaigns(temp);
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
     }
-
-    setCampaigns(temp);
   }
 
   // ---------------- CREATE CAMPAIGN ----------------
@@ -58,6 +87,10 @@ function App() {
     const causeCategory = formData.get('causeCategory');
     const goal = formData.get('goalAmount');
     const days = formData.get('durationInDays');
+    const creatorAddress = address; // Add creatorAddress from wallet
+
+    // Add creatorAddress to formData
+    formData.append('creatorAddress', creatorAddress);
 
     // First, save to backend
     const backendResponse = await fetch('http://localhost:5000/campaigns', {
@@ -93,6 +126,22 @@ function App() {
     );
 
     await tx.wait();
+
+    // Add milestones to blockchain if any
+    if (backendData.milestones && backendData.milestones.length > 0) {
+      for (let i = 0; i < backendData.milestones.length; i++) {
+        const milestone = backendData.milestones[i];
+        const milestoneTx = await contract.addMilestone(
+          backendData.campaignId,
+          milestone.title,
+          milestone.description,
+          ethers.parseEther(milestone.amount.toString()),
+          Math.floor(new Date(milestone.expectedCompletionDate).getTime() / 1000)
+        );
+        await milestoneTx.wait();
+      }
+    }
+
     alert("Campaign Created Successfully!");
 
     await loadCampaigns(); // refresh list
@@ -123,7 +172,7 @@ function App() {
     if (window.ethereum) {
       loadCampaigns();
     }
-  }, []);
+  }, [address]);
 
   // ---------------- UI ----------------
   return (
@@ -146,6 +195,12 @@ function App() {
               fundCampaign={fundCampaign}
             />
           }
+        />
+
+        {/* Campaign Details */}
+        <Route
+          path="/campaign/:id"
+          element={<CampaignDetails campaigns={campaigns} fundCampaign={fundCampaign} />}
         />
       </Routes>
     </BrowserRouter>

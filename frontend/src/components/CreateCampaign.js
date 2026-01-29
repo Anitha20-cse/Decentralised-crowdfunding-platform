@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function CreateCampaign({ createCampaign }) {
+function CreateCampaign({ createCampaign, account }) {
   const [title, setTitle] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [detailedDescription, setDetailedDescription] = useState("");
@@ -9,14 +9,21 @@ function CreateCampaign({ createCampaign }) {
   const [creatorName, setCreatorName] = useState("");
   const [creatorRole, setCreatorRole] = useState("");
   const [causeCategory, setCauseCategory] = useState("");
-  const [numMilestones, setNumMilestones] = useState(0);
-  const [milestones, setMilestones] = useState([]);
+  const [numMilestones, setNumMilestones] = useState(1);
+  const [milestones, setMilestones] = useState([{
+    title: '',
+    description: '',
+    amount: '',
+    expectedCompletionDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  }]);
   const [images, setImages] = useState([]);
 
   const handleMilestoneChange = (index, field, value) => {
-    const newMilestones = [...milestones];
-    newMilestones[index] = { ...newMilestones[index], [field]: value };
-    setMilestones(newMilestones);
+    setMilestones(prev => {
+      const newMilestones = [...prev];
+      newMilestones[index] = { ...newMilestones[index], [field]: value };
+      return newMilestones;
+    });
   };
 
   const handleImageChange = (e) => {
@@ -24,6 +31,7 @@ function CreateCampaign({ createCampaign }) {
   };
 
   async function handleCreate() {
+    console.log('CreateCampaign - Account received:', account);
     if (!title || !shortDescription || !detailedDescription || !goal || !days || !creatorName || !creatorRole || !causeCategory) {
       alert("Please fill all required fields");
       return;
@@ -36,9 +44,22 @@ function CreateCampaign({ createCampaign }) {
       alert("Duration must be a positive integer");
       return;
     }
-    if (numMilestones > 0 && milestones.length !== numMilestones) {
-      alert("Please fill all milestone details");
-      return;
+    if (numMilestones > 0) {
+      if (milestones.length !== numMilestones) {
+        alert("Please fill all milestone details");
+        return;
+      }
+      for (let i = 0; i < milestones.length; i++) {
+        const m = milestones[i];
+        if (!m.title.trim() || !m.description.trim() || !m.amount || !m.expectedCompletionDate) {
+          alert(`Please fill all fields for Milestone ${i + 1}`);
+          return;
+        }
+        if (isNaN(parseFloat(m.amount)) || parseFloat(m.amount) <= 0) {
+          alert(`Target amount for Milestone ${i + 1} must be a positive number`);
+          return;
+        }
+      }
     }
 
     const formData = new FormData();
@@ -50,6 +71,7 @@ function CreateCampaign({ createCampaign }) {
     formData.append('creatorName', creatorName);
     formData.append('creatorRole', creatorRole);
     formData.append('causeCategory', causeCategory);
+    formData.append('creatorAddress', account);
     formData.append('numMilestones', numMilestones);
     formData.append('milestones', JSON.stringify(milestones));
     images.forEach((image, index) => {
@@ -143,7 +165,19 @@ function CreateCampaign({ createCampaign }) {
             setMilestones([]);
           } else {
             setNumMilestones(value);
-            setMilestones(Array(value).fill({}));
+            setMilestones(prev => {
+              const newMilestones = [...prev];
+              if (value > newMilestones.length) {
+                // Add empty objects
+                for (let i = newMilestones.length; i < value; i++) {
+                  newMilestones.push({});
+                }
+              } else if (value < newMilestones.length) {
+                // Truncate
+                newMilestones.splice(value);
+              }
+              return newMilestones;
+            });
           }
         }}
       />

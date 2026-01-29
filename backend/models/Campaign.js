@@ -44,6 +44,19 @@ const campaignSchema = new mongoose.Schema({
   images: [{
     type: String, // IPFS links
   }],
+  creatorAddress: {
+    type: String,
+  },
+  numMilestones: {
+    type: Number,
+    default: 0,
+  },
+  milestones: [{
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    amount: { type: Number, required: true }, // Target amount for this milestone
+    expectedCompletionDate: { type: Date, required: true },
+  }],
 }, {
   timestamps: true,
 });
